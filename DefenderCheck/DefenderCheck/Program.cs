@@ -79,7 +79,6 @@ namespace DefenderCheck
                 }
                 HexDump(offendingBytes, 16);
                 File.Delete(testfilepath);
-                Console.ReadKey();
                 Environment.Exit(0);
             }
             Array.Copy(originalarray, splitarray, splitarray.Length);
