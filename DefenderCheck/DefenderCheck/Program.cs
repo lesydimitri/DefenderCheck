@@ -9,9 +9,10 @@ namespace DefenderCheck
 {
     class Program
     {
+        // The path of the testfile to be created. "testfile" in the current working directory.
+        private static string testfilepath = Directory.GetCurrentDirectory() + "\\testfile";
         static void Main(string[] args)
         {
-            //Setup();
             bool debug = false;
             if (args.Length == 2 && args[1].Equals("--debug"))
             {
@@ -27,7 +28,6 @@ namespace DefenderCheck
                 Environment.Exit(0);
             }
 
-            string testfilepath = @"C:\Temp\testfile.exe";
             byte[] originalfilecontents = File.ReadAllBytes(targetfile);
             int originalfilesize = originalfilecontents.Length;
             Console.WriteLine("Target file size: {0} bytes", originalfilecontents.Length);
@@ -60,45 +60,26 @@ namespace DefenderCheck
             }
         }
 
-        //public static void Setup()
-        //{
-        //    RegistryKey defenderService = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Policies\Microsoft\Windows Defender");
-        //    object defenderServiceValue = defenderService.GetValue("DisableAntiSpyware");
-        //    if (!defenderServiceValue.Equals(0)) //This is the case in situations like Commando
-        //    {
-        //        Console.WriteLine("[-] The defender antispyware service is not enabled, so MpCmdRun will fail. Exiting...");
-        //        Environment.Exit(1);
-        //    }
-        //    defenderService.Close();
-
-        //    if (!Directory.Exists(@"C:\temp"))
-        //    {
-        //        Console.WriteLine(@"[-] C:\Temp\ doesn't exist. Creating it.");
-        //        Directory.CreateDirectory(@"C:\Temp");
-        //    }
-
-        //}
-
         public static byte[] HalfSplitter(byte[] originalarray, int lastgood) //Will round down to nearest int
         {
             byte[] splitarray = new byte[(originalarray.Length - lastgood)/2+lastgood];
             if (originalarray.Length == splitarray.Length +1)
             {
                 Console.WriteLine("[!] Identified end of bad bytes at offset 0x{0:X} in the original file", originalarray.Length);
-                Scan(@"C:\Temp\testfile.exe", true);
+                Scan(testfilepath, true);
                 byte[] offendingBytes = new byte[256];
 
                 if (originalarray.Length < 256)
                 {
                     Array.Resize(ref offendingBytes, originalarray.Length);
-                    Buffer.BlockCopy(originalarray, originalarray.Length, offendingBytes, 0, originalarray.Length);
+                    Buffer.BlockCopy(originalarray, 0, offendingBytes, 0, originalarray.Length);
                 }
-                else
-                {
+                else {
                     Buffer.BlockCopy(originalarray, originalarray.Length - 256, offendingBytes, 0, 256);
                 }
                 HexDump(offendingBytes, 16);
-                File.Delete(@"C:\Temp\testfile.exe");
+                File.Delete(testfilepath);
+                Console.ReadKey();
                 Environment.Exit(0);
             }
             Array.Copy(originalarray, splitarray, splitarray.Length);
